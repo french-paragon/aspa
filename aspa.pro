@@ -15,14 +15,20 @@ CONFIG += c++11
 
 INCLUDEPATH += ./src
 INCLUDEPATH += ./src/models
+INCLUDEPATH += ./src/utils
+
 
 SOURCES += src/main.cpp\
 	src/mainwindow.cpp \
     src/models/projectlistmodel.cpp \
-    src/models/demandlistmodel.cpp
+    src/models/demandlistmodel.cpp \
+    src/utils/attributor.cpp \
+    src/models/attributionmodel.cpp
 
 HEADERS  += src/mainwindow.h \
     src/models/projectlistmodel.h \
-    src/models/demandlistmodel.h
+    src/models/demandlistmodel.h \
+    src/utils/attributor.h \
+    src/models/attributionmodel.h
 
 FORMS    += src/mainwindow.ui

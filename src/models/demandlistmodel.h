@@ -56,6 +56,11 @@ public:
 	void insertDemandTuple(DemandTuple const& tuple);
 	void removeSelectedTuples(QModelIndexList const& selecteds);
 
+	unsigned int numberOfChoices() const { return _numberOfChoices; }
+	//TODO: mapping avec les indexes (évent)
+	QString findGroupNameById(int id) const;
+	int findPriorityIndexById(int id, unsigned int level) const;
+
 signals:
 
 public slots:

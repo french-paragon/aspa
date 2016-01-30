@@ -167,7 +167,7 @@ bool DemandListModel::setData(const QModelIndex & index,
 
 	if(role == Qt::EditRole){
 		if(col > 0){
-			if(value.type() == QVariant::String){
+			if(value.type() == QVariant::String || value.type() == QVariant::Int){
 				if(col == 1){
 
 					_tuples[row].names = value.toString();
@@ -441,4 +441,24 @@ void DemandListModel::createTuple(){
 	tuple.additionalVars = QVector<QString>(_additionalVariablesName.size(), QString());
 	tuple.preferences = QVector<int>(_numberOfChoices, noChoice);
 	insertDemandTuple(tuple);
+}
+
+QString DemandListModel::findGroupNameById(int id) const{
+	for(int i = 0; i < _tuples.size(); i++){
+		if(_tuples[i].index == (uint) id){
+			return _tuples[i].names;
+		}
+	}
+	return "";
+}
+int DemandListModel::findPriorityIndexById(int id, unsigned int level) const{
+	if(level > _numberOfChoices){
+		return noChoice;
+	}
+	for(int i = 0; i < _tuples.size(); i++){
+		if(_tuples[i].index == (uint) id){
+			return _tuples[i].preferences[level-1];
+		}
+	}
+	return noChoice;
 }

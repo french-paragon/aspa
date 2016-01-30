@@ -51,6 +51,8 @@ public:
 	void insertProjectTuple(ProjectTuple const& tuple);
 	void removeSelectedTuples(QModelIndexList const& selecteds);
 
+	QString findProjectNameById(int id);
+
 signals:
 
 public slots:

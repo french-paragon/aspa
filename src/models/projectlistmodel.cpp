@@ -357,3 +357,13 @@ void ProjectListModel::createTuple(){
 	tuple.additionalVars = QVector<QString>(_additionalVariablesName.size(), QString());
 	insertProjectTuple(tuple);
 }
+
+
+QString ProjectListModel::findProjectNameById(int id){
+	for(int i = 0; i < _tuples.size(); i++){
+		if(_tuples[i].index == id){
+			return _tuples[i].name;
+		}
+	}
+	return "";
+}

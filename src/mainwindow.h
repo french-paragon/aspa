@@ -5,6 +5,7 @@
 
 class ProjectListModel;
 class DemandListModel;
+class AttributionModel;
 
 namespace Ui {
 class MainWindow;
@@ -30,6 +31,8 @@ public slots:
 
 	bool saveProjectAs();
 
+	bool doAttribution();
+
 protected:
 
 	void configureModels();
@@ -39,6 +42,7 @@ private:
     Ui::MainWindow *ui;
 	ProjectListModel* _projectsModel;
 	DemandListModel* _demandModel;
+	AttributionModel* _attributionModel;
 	QString _projectFile;
 };
 

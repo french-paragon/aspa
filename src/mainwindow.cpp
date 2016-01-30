@@ -3,6 +3,8 @@
 
 #include "projectlistmodel.h"
 #include "demandlistmodel.h"
+#include "attributionmodel.h"
+#include "attributor.h"
 
 #include <QDir>
 #include <QTableView>
@@ -25,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	 _projectsModel = new ProjectListModel(this);
 	 _demandModel = new DemandListModel(this);
+	 _attributionModel = nullptr;
 
 	 configureModels();
 	 configureActions();
@@ -68,10 +71,23 @@ void MainWindow::configureModels(){
 							"selection-background-color: transparent;}");
 	ui->demandView->verticalHeader()->hide();
 	ui->demandView->horizontalHeader()->setStretchLastSection(true);
+
+	ui->attributionView->horizontalHeader()
+			->setStyleSheet("QHeaderView::section{background-color:rgb(144, 50, 13); "
+							"selection-background-color: transparent;}"
+							"QHeaderView::section:checked{background-color:rgb(144, 50, 13); "
+							"selection-background-color: transparent;}");
+	ui->attributionView->verticalHeader()->hide();
+	ui->attributionView->horizontalHeader()->setStretchLastSection(true);
 }
 void MainWindow::configureActions(){
+
 	connect(ui->actionEnregistrer_sous, SIGNAL(triggered()),
 			this, SLOT(saveProjectAs()));
+
+	connect(ui->actionRecr_e_la_table_d_attribution, SIGNAL(triggered()),
+			this, SLOT(doAttribution()));
+
 }
 
 
@@ -148,4 +164,30 @@ bool MainWindow::saveProjectAs(){
 
 	return true;
 
+}
+
+bool MainWindow::doAttribution(){
+
+	if(_attributionModel == nullptr){//new attribution
+		QVector<Attribution> attr = Attributor::directAttribution(*_projectsModel,
+																  *_demandModel);
+
+		//hungarian algorithm yet not supported
+		//TODO: support it.
+
+		if(attr == QVector<Attribution>()){
+			return false;
+		}
+
+		_attributionModel = new AttributionModel(_demandModel,
+												 _projectsModel,
+												 attr,
+												 this);
+
+		ui->attributionView->setModel(_attributionModel);
+
+		ui->tabWidget->setCurrentIndex(3);
+	}
+
+	return false;
 }

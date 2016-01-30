@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>514</width>
-    <height>499</height>
+    <width>843</width>
+    <height>630</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,14 +28,14 @@
         <item row="1" column="0">
          <widget class="QPushButton" name="addProjectButton">
           <property name="text">
-           <string>ajouter</string>
+           <string>Ajouter</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
          <widget class="QPushButton" name="removeProjectButton">
           <property name="text">
-           <string>supprimer</string>
+           <string>Supprimer</string>
           </property>
          </widget>
         </item>
@@ -45,7 +45,7 @@
         <item row="2" column="0" colspan="2">
          <widget class="QPushButton" name="importProjectButton">
           <property name="text">
-           <string>importer une liste</string>
+           <string>Importer une liste</string>
           </property>
          </widget>
         </item>
@@ -99,7 +99,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
-         <widget class="QTableView" name="tableView"/>
+         <widget class="QTableView" name="attributionView"/>
         </item>
         <item row="1" column="0">
          <widget class="QPushButton" name="exportPdfButton">
@@ -152,7 +152,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>514</width>
+     <width>843</width>
      <height>25</height>
     </rect>
    </property>
