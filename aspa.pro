@@ -18,9 +18,11 @@ INCLUDEPATH += ./src/models
 
 SOURCES += src/main.cpp\
 	src/mainwindow.cpp \
-    src/models/projectlistmodel.cpp
+    src/models/projectlistmodel.cpp \
+    src/models/demandlistmodel.cpp
 
 HEADERS  += src/mainwindow.h \
-    src/models/projectlistmodel.h
+    src/models/projectlistmodel.h \
+    src/models/demandlistmodel.h
 
 FORMS    += src/mainwindow.ui

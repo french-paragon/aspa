@@ -166,6 +166,7 @@
     <addaction name="actionImporter_une_liste_de_demandes"/>
     <addaction name="separator"/>
     <addaction name="actionEnregistrer_le_projet_courant"/>
+    <addaction name="actionEnregistrer_sous"/>
     <addaction name="actionFermer_le_projet"/>
     <addaction name="separator"/>
     <addaction name="actionQuitter"/>
@@ -227,6 +228,11 @@
   <action name="actionQuitter">
    <property name="text">
     <string>quitter</string>
+   </property>
+  </action>
+  <action name="actionEnregistrer_sous">
+   <property name="text">
+    <string>enregistrer sous</string>
    </property>
   </action>
  </widget>

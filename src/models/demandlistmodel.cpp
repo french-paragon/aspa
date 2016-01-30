@@ -1,4 +1,4 @@
-#include "projectlistmodel.h"
+#include "demandlistmodel.h"
 
 #include <QColor>
 #include <QFont>
@@ -10,66 +10,93 @@
 
 #include <algorithm>
 
-const char* ProjectListModel::indexColText = "index";
-const char* ProjectListModel::nameColText = "nom";
 
-const char* ProjectListModel::idIndex = "index";
-const char* ProjectListModel::nameIndex = "name";
-const char* ProjectListModel::nextInsertIdIndex = "next_index";
-const char* ProjectListModel::additionalVarsIndex = "additionals";
-const char* ProjectListModel::tuplesIndex = "tuples";
+const char* DemandListModel::indexColText = "index";
+const char* DemandListModel::nameColText = "Nom de groupe";
 
-ProjectListModel::ProjectListModel(QObject *parent, const QJsonObject &rep):
+const char* DemandListModel::idIndex = "index";
+const char* DemandListModel::namesIndex = "names";
+const char* DemandListModel::choicesIndex = "choices";
+const char* DemandListModel::nextInsertIdIndex = "nextId";
+const char* DemandListModel::numberOfChoicesIndex = "n_choices";
+const char* DemandListModel::additionalVarsIndex = "additionals";
+const char* DemandListModel::tuplesIndex = "tuples";
+
+const int DemandListModel::noChoice = -1;
+
+DemandListModel::DemandListModel(QObject *parent, const QJsonObject &rep):
 	QAbstractTableModel(parent)
 {
+	_numberOfChoices = 6; //6 is the new default.
 	_nextInsertId = 1;
 	_usedIndexes.insert(0);
 	parseJsonObject(rep);
 }
 
-QVariant ProjectListModel::data(const QModelIndex & index,
-								int role) const{
+QVariant DemandListModel::data(const QModelIndex & index,
+			  int role) const{
 
 	int row = index.row();
-	int column = index.column();
+	int col = index.column();
 
 	switch(role){
 
 	case Qt::DisplayRole:
 	case Qt::EditRole:
 
-		if(column == 0){
+		if(col == 0){
+
 			return QVariant( (uint) _tuples[row].index);
-		} else if (column == 1){
-			return _tuples[row].name;
+
+		} else if (col == 1){
+
+			return _tuples[row].names;
+
+		} else if ((uint) col < 2 + _numberOfChoices){
+
+			if(_tuples[row].preferences.size() <= col - 2){
+
+				size_t old = _tuples[row].preferences.size();
+				_tuples[row].preferences.resize(_numberOfChoices);
+
+				for(int i = old; i < _tuples[row].preferences.size(); i++){
+					_tuples[row].preferences[i] = noChoice;
+				}
+
+			}
+
+			return (_tuples[row].preferences[col-2] == noChoice) ?
+						( (role == Qt::DisplayRole) ? QVariant(QString("not set")) : QVariant(QString("")) ) :
+						QVariant(_tuples[row].preferences[col-2]);
+
 		} else {
 
 			if(_tuples[row].additionalVars.size() < _additionalVariablesName.size()){
 				_tuples[row].additionalVars.resize(_additionalVariablesName.size());
 			}
 
-			return _tuples[row].additionalVars[column-2];
+			return _tuples[row].additionalVars[col-2-_numberOfChoices];
+
 		}
 
 	case Qt::BackgroundRole:
-
-		if(column == 0){ // case we are in the first column
+		if(col == 0){ // case we are in the first column
 			if(row % 2){
-				return QColor(135, 156, 71);
+				return QColor(244, 211, 121);
 			} else {
-				return QColor(183, 199, 133);
+				return QColor(231, 143, 30);
 			}
 		} else{
 			if(row % 2){
-				return QColor(199, 199, 133);
+				return QColor(255, 253, 199);
 			} else {
-				return QColor(230, 230, 180);
+				return QColor(241, 228, 166);
 			}
 		}
 
 	case Qt::FontRole:
 
-		if(column == 0){
+		if(col == 0){
 			QFont boldFont;
 			boldFont.setBold(true);
 			return boldFont;
@@ -85,9 +112,9 @@ QVariant ProjectListModel::data(const QModelIndex & index,
 	return QVariant();
 }
 
-QVariant ProjectListModel::headerData(int column,
-									  Qt::Orientation orientation,
-									  int role) const{
+QVariant DemandListModel::headerData(int column,
+									 Qt::Orientation orientation,
+									 int role) const{
 
 	if(orientation == Qt::Horizontal) {
 
@@ -99,14 +126,16 @@ QVariant ProjectListModel::headerData(int column,
 				return QString(tr(indexColText));
 			} else if (column == 1){
 				return QString(tr(nameColText));
+			} else if ((uint) column < 2 + _numberOfChoices){
+				return QString(tr("Choix %1")).arg(column-1);
 			} else {
-				return _additionalVariablesName[column-2];
+				return _additionalVariablesName[column-2-_numberOfChoices];
 			}
 			break;
 
 		case Qt::BackgroundRole:
 
-			return QColor(80, 100, 25);
+			return QColor(211, 128, 10);
 
 		case Qt::ForegroundRole:
 
@@ -127,31 +156,52 @@ QVariant ProjectListModel::headerData(int column,
 	}
 
 	return QVariant();
-
 }
 
-bool ProjectListModel::setData ( const QModelIndex & index,
-			   const QVariant & value,
-			   int role) {
-
+bool DemandListModel::setData(const QModelIndex & index,
+							  const QVariant & value,
+							  int role ){
 
 	int row = index.row();
-	int column = index.column();
+	int col = index.column();
 
 	if(role == Qt::EditRole){
-		if(column > 0){// indices ar not editables.
+		if(col > 0){
 			if(value.type() == QVariant::String){
-				if(column == 1){
+				if(col == 1){
 
-					_tuples[row].name = value.toString();
+					_tuples[row].names = value.toString();
 					return true;
 
-				} else if (column - 2 < _additionalVariablesName.size()){
+				} else if ((uint) col < 2 + _numberOfChoices){
+
+					if(_tuples[row].preferences.size() <= col - 2){
+
+						size_t old = _tuples[row].preferences.size();
+						_tuples[row].preferences.resize(_numberOfChoices);
+
+						for(int i = old; i < _tuples[row].preferences.size(); i++){
+							_tuples[row].preferences[i] = noChoice;
+						}
+					}
+
+					bool ok;
+					int val = value.toInt(&ok);
+
+					if(!ok){
+						return false;
+					}
+
+					_tuples[row].preferences[col-2] = val;
+					return true;
+
+				} else {
 
 					if(_tuples[row].additionalVars.size() < _additionalVariablesName.size()){
 						_tuples[row].additionalVars.resize(_additionalVariablesName.size());
 					}
-					_tuples[row].additionalVars[column-2] = value.toString();
+
+					_tuples[row].additionalVars[col-2-_numberOfChoices] = value.toString();
 					return true;
 
 				}
@@ -161,23 +211,27 @@ bool ProjectListModel::setData ( const QModelIndex & index,
 
 	return false;
 }
-Qt::ItemFlags ProjectListModel::flags ( const QModelIndex & index ) const{
+
+Qt::ItemFlags DemandListModel::flags ( const QModelIndex & index ) const{
 
 	int retour = (int) Qt::ItemIsEnabled;
 
-	if(index.column() > 0) {
-		retour |=  (int) Qt::ItemIsSelectable | (int) Qt::ItemIsEditable ;
-	}
-	return (Qt::ItemFlags) retour;
 
+	if(index.column() == 1) {
+		retour |=  (int) Qt::ItemIsSelectable | (int) Qt::ItemIsEditable ;
+	} else if (index.column() > 1) {
+		retour |=  (int) Qt::ItemIsEditable ;
+	}
+
+	return (Qt::ItemFlags) retour;
 }
 
-QJsonObject ProjectListModel::representTuple(ProjectTuple const& tuple) const{
+QJsonObject DemandListModel::representTuple(DemandTuple const& tuple) const{
 
 	QJsonObject rep;
 
 	rep.insert(idIndex, QJsonValue( (int) tuple.index));
-	rep.insert(nameIndex, tuple.name);
+	rep.insert(namesIndex, tuple.names);
 
 	QJsonArray additionals;
 
@@ -187,14 +241,25 @@ QJsonObject ProjectListModel::representTuple(ProjectTuple const& tuple) const{
 
 	rep.insert(additionalVarsIndex, additionals);
 
+	QJsonArray choices;
+
+	for (int choice : tuple.preferences){
+		choices.push_back(QJsonValue(choice));
+	}
+
+	rep.insert(choicesIndex, choices);
+
 	return rep;
+
 }
 
-QJsonObject ProjectListModel::representation() const{
+QJsonObject DemandListModel::representation() const{
 
 	QJsonObject rep;
 
 	rep.insert(nextInsertIdIndex, QJsonValue(_nextInsertId));
+
+	rep.insert(numberOfChoicesIndex, QJsonValue((int) _numberOfChoices));
 
 	QJsonArray additionalVars;
 
@@ -206,7 +271,7 @@ QJsonObject ProjectListModel::representation() const{
 
 	QJsonArray tuples;
 
-	for(ProjectTuple tuple : _tuples){
+	for(DemandTuple tuple : _tuples){
 		tuples.push_back(representTuple(tuple));
 	}
 
@@ -216,10 +281,9 @@ QJsonObject ProjectListModel::representation() const{
 
 }
 
+DemandTuple DemandListModel::parseTuple(QJsonObject const& tuple, bool & ok){
 
-ProjectTuple ProjectListModel::parseTuple(QJsonObject const& tuple, bool & ok){
-
-	ProjectTuple rtuple;
+	DemandTuple rtuple;
 
 	ok = true;
 
@@ -235,9 +299,11 @@ ProjectTuple ProjectListModel::parseTuple(QJsonObject const& tuple, bool & ok){
 	} else {
 		goto end_with_error;
 	}
-	if(tuple.contains(nameIndex)){
-		rtuple.name = tuple.value(nameIndex).toString();
+
+	if(tuple.contains(namesIndex)){
+		rtuple.names = tuple.value(namesIndex).toString();
 	}
+
 	rtuple.additionalVars = QVector<QString>(_additionalVariablesName.size(), QString());
 
 	if(tuple.contains(additionalVarsIndex)){
@@ -247,6 +313,20 @@ ProjectTuple ProjectListModel::parseTuple(QJsonObject const& tuple, bool & ok){
 			for(int i = 0; i < array.size() && i < rtuple.additionalVars.size(); i++){
 				rtuple.additionalVars[i] = array.at(i).toString();
 			}
+		}
+	}
+
+	rtuple.preferences = QVector<int>(_numberOfChoices, noChoice);
+
+	if(tuple.contains(choicesIndex)){
+		if(tuple.value(choicesIndex).isArray()){
+
+			QJsonArray array = tuple.value(choicesIndex).toArray();
+
+			for(int i = 0; i < array.size() && i < rtuple.additionalVars.size(); i++){
+				rtuple.additionalVars[i] = array.at(i).toInt(noChoice);
+			}
+
 		}
 	}
 
@@ -263,12 +343,17 @@ ProjectTuple ProjectListModel::parseTuple(QJsonObject const& tuple, bool & ok){
 	ok = false;
 	goto end;
 	return rtuple;
+
 }
 
-void ProjectListModel::parseJsonObject(QJsonObject const& rep){
+void DemandListModel::parseJsonObject(QJsonObject const& rep){
 
 	if(rep.contains(nextInsertIdIndex)){
 		_nextInsertId = rep.value(nextInsertIdIndex).toInt();
+	}
+
+	if(rep.contains(numberOfChoicesIndex)){
+		_numberOfChoices = rep.value(numberOfChoicesIndex).toInt();
 	}
 
 	if(rep.contains(additionalVarsIndex)){
@@ -291,30 +376,29 @@ void ProjectListModel::parseJsonObject(QJsonObject const& rep){
 			for(QJsonValue val: rep.value(tuplesIndex).toArray()){
 				if(val.isObject()){
 					bool ok;
-					ProjectTuple tuple = parseTuple(val.toObject(), ok);
+					DemandTuple tuple = parseTuple(val.toObject(), ok);
 
 					if(ok){
-						insertProjectTuple(tuple);
+						insertDemandTuple(tuple);
 					}
 				}
 			}
 		}
 	}
-
 }
 
 
-void ProjectListModel::emptyTuples(){
+void DemandListModel::emptyTuples(){
 	beginRemoveRows(QModelIndex(),0,rowCount()-1);
 	_tuples.clear();
 	_usedIndexes.clear();
 	endRemoveRows();
 }
 
-void ProjectListModel::insertProjectTuple(ProjectTuple const& tuple){
+void DemandListModel::insertDemandTuple(DemandTuple const& tuple){
 	beginInsertRows(QModelIndex(), rowCount()-1, rowCount()-1);
 	if(_usedIndexes.contains(tuple.index)){
-		ProjectTuple ntuple = tuple;
+		DemandTuple ntuple = tuple;
 		ntuple.index = _nextInsertId;
 		_usedIndexes.insert(ntuple.index);
 		_nextInsertId++;
@@ -329,7 +413,7 @@ void ProjectListModel::insertProjectTuple(ProjectTuple const& tuple){
 	}
 	endInsertRows();
 }
-void ProjectListModel::removeSelectedTuples(const QModelIndexList &selecteds){
+void DemandListModel::removeSelectedTuples(const QModelIndexList &selecteds){
 
 	QVector<int> rows;
 
@@ -352,8 +436,9 @@ void ProjectListModel::removeSelectedTuples(const QModelIndexList &selecteds){
 }
 
 
-void ProjectListModel::createTuple(){
-	ProjectTuple tuple;
+void DemandListModel::createTuple(){
+	DemandTuple tuple;
 	tuple.additionalVars = QVector<QString>(_additionalVariablesName.size(), QString());
-	insertProjectTuple(tuple);
+	tuple.preferences = QVector<int>(_numberOfChoices, noChoice);
+	insertDemandTuple(tuple);
 }
