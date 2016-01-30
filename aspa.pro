@@ -11,6 +11,10 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = aspa
 TEMPLATE = app
 
+CONFIG += c++11
+
+INCLUDEPATH += ./src
+INCLUDEPATH += ./src/models
 
 SOURCES += src/main.cpp\
 	src/mainwindow.cpp \

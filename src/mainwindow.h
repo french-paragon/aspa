@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+class ProjectListModel;
+
 namespace Ui {
 class MainWindow;
 }
@@ -15,8 +17,17 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+public slots:
+
+	void onProjectDeletionRequested();
+
+protected:
+
+	void configureModels();
+
 private:
     Ui::MainWindow *ui;
+	ProjectListModel* _projectsModel;
 };
 
 #endif // MAINWINDOW_H
