@@ -14,6 +14,8 @@
 #include <QJsonDocument>
 
 
+const char* MainWindow::progName = "aspa";
+
 const char* MainWindow::projectsDatasIndex = "projects";
 const char* MainWindow::demandesDatasIndex = "demandes";
 
@@ -31,6 +33,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	 configureModels();
 	 configureActions();
+	 configureToolBar();
+
+	 setWindowTitle(progName);
 }
 
 MainWindow::~MainWindow()
@@ -85,9 +90,24 @@ void MainWindow::configureActions(){
 	connect(ui->actionEnregistrer_sous, SIGNAL(triggered()),
 			this, SLOT(saveProjectAs()));
 
+	connect(ui->actionOuvrir_un_projet, SIGNAL(triggered()),
+			this, SLOT(openProject()));
+
+	connect(ui->actionEnregistrer_le_projet_courant, SIGNAL(triggered()),
+			this, SLOT(saveProject()));
+
 	connect(ui->actionRecr_e_la_table_d_attribution, SIGNAL(triggered()),
 			this, SLOT(doAttribution()));
 
+	connect(ui->actionQuitter, SIGNAL(triggered()),
+			this, SLOT(quit()));
+
+}
+
+void MainWindow::configureToolBar(){
+	ui->mainToolBar->addAction(ui->actionEnregistrer_le_projet_courant);
+	ui->mainToolBar->addAction(ui->actionEnregistrer_sous);
+	ui->mainToolBar->addAction(ui->actionOuvrir_un_projet);
 }
 
 
@@ -101,6 +121,110 @@ void MainWindow::onDemandDeletionRequested(){
 	_demandModel->removeSelectedTuples(selecteds);
 }
 
+bool MainWindow::openProject(){
+
+	QFileDialog fd(this);
+	fd.setWindowTitle(tr("Ouvrir un projet"));
+	fd.setFileMode(QFileDialog::ExistingFile);
+	//fd.setDefaultSuffix(".aspa");
+	fd.setDirectory(QDir::homePath());
+	fd.setNameFilter("projets aspa (*.aspa)");
+
+	//selection:
+
+	int code = fd.exec();
+
+	if(code == QDialog::Rejected){
+		return false;
+	}
+
+	QString openFileName = fd.selectedFiles().first();
+
+	QFile in(openFileName);
+
+	if(!in.open(QIODevice::ReadOnly | QIODevice::Text)){
+		QMessageBox::critical(this, "Error loading project file", "Unable to open file");
+		return false;
+	}
+
+	QByteArray datas = in.readAll();
+
+	QJsonParseError errors;
+	QJsonDocument doc = QJsonDocument::fromJson(datas, &errors);
+
+	if(errors.error != QJsonParseError::NoError){
+		QMessageBox::critical(this, "Error parsing project file", "Json parser indicate:\n"+errors.errorString());
+		return false;
+	}
+
+	if(doc.isObject()){
+
+		delete _attributionModel;
+		_attributionModel = nullptr;
+
+		QJsonObject proj = doc.object();
+
+		_projectsModel->emptyTuples();
+		_demandModel->emptyTuples();
+
+		if(proj.contains(projectsDatasIndex)){
+			QJsonObject projects = proj.value(projectsDatasIndex).toObject();
+
+			_projectsModel->parseJsonObject(projects);
+		}
+
+		if(proj.contains(demandesDatasIndex)){
+			QJsonObject demands = proj.value(demandesDatasIndex).toObject();
+
+			_demandModel->parseJsonObject(demands);
+		}
+
+		_projectFile = openFileName;
+		return true;
+
+	}
+
+	return false;
+
+}
+
+bool MainWindow::saveProject(){
+
+	QFile out(_projectFile);
+
+	if(!out.exists()){
+		return saveProjectAs();
+	}
+
+	QJsonObject projects = _projectsModel->representation();
+	QJsonObject demandes = _demandModel->representation();
+
+	QJsonObject proj;
+
+	proj.insert(projectsDatasIndex, projects);
+	proj.insert(demandesDatasIndex, demandes);
+
+	QJsonDocument doc(proj);
+	QByteArray datas = doc.toJson();
+
+	if(!out.open(QIODevice::WriteOnly)){
+		QMessageBox::critical(this,
+							  "erreur lors de l'enregistrement du projet.",
+							  "Impossible d'ouvrir le fichier en écriture.");
+		return false;
+	}
+
+	qint64 w_stat = out.write(datas);
+	out.close();
+
+	if(w_stat < 0){
+		return false;
+	}
+
+	return true;
+
+
+}
 
 bool MainWindow::saveProjectAs(){
 
@@ -158,6 +282,8 @@ bool MainWindow::saveProjectAs(){
 	qint64 w_stat = out.write(datas);
 	out.close();
 
+	_projectFile = saveFileName;
+
 	if(w_stat < 0){
 		return false;
 	}
@@ -190,4 +316,9 @@ bool MainWindow::doAttribution(){
 	}
 
 	return false;
+}
+
+
+void MainWindow::quit(){
+	qApp->quit();
 }

@@ -48,6 +48,7 @@ public:
 	QJsonObject representation() const;
 
 	void emptyTuples();
+	void parseJsonObject(QJsonObject const& rep = QJsonObject());
 	void insertProjectTuple(ProjectTuple const& tuple);
 	void removeSelectedTuples(QModelIndexList const& selecteds);
 
@@ -62,7 +63,6 @@ public slots:
 
 protected:
 
-	void parseJsonObject(QJsonObject const& rep = QJsonObject());
 	QJsonObject representTuple(ProjectTuple const& tuple) const;
 	ProjectTuple parseTuple(QJsonObject const& tuple, bool & ok);
 

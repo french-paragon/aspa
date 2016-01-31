@@ -323,8 +323,8 @@ DemandTuple DemandListModel::parseTuple(QJsonObject const& tuple, bool & ok){
 
 			QJsonArray array = tuple.value(choicesIndex).toArray();
 
-			for(int i = 0; i < array.size() && i < rtuple.additionalVars.size(); i++){
-				rtuple.additionalVars[i] = array.at(i).toInt(noChoice);
+			for(int i = 0; i < array.size() && i < rtuple.preferences.size(); i++){
+				rtuple.preferences[i] = array.at(i).toInt(noChoice);
 			}
 
 		}
@@ -409,7 +409,6 @@ void DemandListModel::insertDemandTuple(DemandTuple const& tuple){
 		if(tuple.index > (uint) _nextInsertId){
 			_nextInsertId = tuple.index+1;
 		}
-		_tuples.push_back(tuple);
 	}
 	endInsertRows();
 }

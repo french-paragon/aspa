@@ -8,6 +8,8 @@
 #include <QJsonArray>
 #include <QJsonValue>
 
+#include <QDebug>
+
 #include <algorithm>
 
 const char* ProjectListModel::indexColText = "index";
@@ -312,6 +314,8 @@ void ProjectListModel::emptyTuples(){
 }
 
 void ProjectListModel::insertProjectTuple(ProjectTuple const& tuple){
+	qDebug() << "Begin tuple insertion: id=" << tuple.index << " _nextInsertId=" << _nextInsertId;
+	qDebug() << _usedIndexes;
 	beginInsertRows(QModelIndex(), rowCount()-1, rowCount()-1);
 	if(_usedIndexes.contains(tuple.index)){
 		ProjectTuple ntuple = tuple;
@@ -325,9 +329,9 @@ void ProjectListModel::insertProjectTuple(ProjectTuple const& tuple){
 		if(tuple.index > (uint) _nextInsertId){
 			_nextInsertId = tuple.index+1;
 		}
-		_tuples.push_back(tuple);
 	}
 	endInsertRows();
+	qDebug() << "end tuple insertion.";
 }
 void ProjectListModel::removeSelectedTuples(const QModelIndexList &selecteds){
 
@@ -361,7 +365,7 @@ void ProjectListModel::createTuple(){
 
 QString ProjectListModel::findProjectNameById(int id){
 	for(int i = 0; i < _tuples.size(); i++){
-		if(_tuples[i].index == id){
+		if(_tuples[i].index == (uint) id){
 			return _tuples[i].name;
 		}
 	}

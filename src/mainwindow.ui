@@ -201,8 +201,15 @@
    </property>
   </action>
   <action name="actionOuvrir_un_projet">
+   <property name="icon">
+    <iconset resource="../rc/icons.qrc">
+     <normaloff>:/ico/open_ico.svg</normaloff>:/ico/open_ico.svg</iconset>
+   </property>
    <property name="text">
     <string>ouvrir un projet</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionImporter_une_liste_de_projets">
@@ -216,8 +223,15 @@
    </property>
   </action>
   <action name="actionEnregistrer_le_projet_courant">
+   <property name="icon">
+    <iconset resource="../rc/icons.qrc">
+     <normaloff>:/ico/save_ico.svg</normaloff>:/ico/save_ico.svg</iconset>
+   </property>
    <property name="text">
     <string>enregistrer le projet courant</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionFermer_le_projet">
@@ -231,12 +245,21 @@
    </property>
   </action>
   <action name="actionEnregistrer_sous">
+   <property name="icon">
+    <iconset resource="../rc/icons.qrc">
+     <normaloff>:/ico/save_under_ico.svg</normaloff>:/ico/save_under_ico.svg</iconset>
+   </property>
    <property name="text">
     <string>enregistrer sous</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
    </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="../rc/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

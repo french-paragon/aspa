@@ -32,3 +32,6 @@ HEADERS  += src/mainwindow.h \
     src/models/attributionmodel.h
 
 FORMS    += src/mainwindow.ui
+
+RESOURCES += \
+    rc/icons.qrc

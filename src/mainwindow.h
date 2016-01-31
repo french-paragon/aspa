@@ -17,6 +17,8 @@ class MainWindow : public QMainWindow
 
 public:
 
+	static const char* progName;
+
 	static const char* projectsDatasIndex;
 	static const char* demandesDatasIndex;
 
@@ -29,14 +31,20 @@ public slots:
 	void onProjectDeletionRequested();
 	void onDemandDeletionRequested();
 
+	bool openProject();
+
+	bool saveProject();
 	bool saveProjectAs();
 
 	bool doAttribution();
+
+	void quit();
 
 protected:
 
 	void configureModels();
 	void configureActions();
+	void configureToolBar();
 
 private:
     Ui::MainWindow *ui;

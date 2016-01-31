@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>ico/open_ico.svg</file>
+        <file>ico/save_ico.svg</file>
+        <file>ico/save_under_ico.svg</file>
+    </qresource>
+</RCC>
