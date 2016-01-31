@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>843</width>
+    <width>981</width>
     <height>630</height>
    </rect>
   </property>
@@ -98,51 +98,45 @@
         <string>Résultats</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="0" column="0">
-         <widget class="QTableView" name="attributionView"/>
-        </item>
         <item row="1" column="0">
          <widget class="QPushButton" name="exportPdfButton">
           <property name="text">
            <string>Exporter en pdf</string>
           </property>
+          <property name="icon">
+           <iconset resource="../rc/icons.qrc">
+            <normaloff>:/ico/pdf_ico.svg</normaloff>:/ico/pdf_ico.svg</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
          </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="exportHtmlButton">
+          <property name="text">
+           <string>Exporter en html</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../rc/icons.qrc">
+            <normaloff>:/ico/html_ico.svg</normaloff>:/ico/html_ico.svg</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>32</width>
+            <height>32</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <widget class="QTableView" name="attributionView"/>
         </item>
        </layout>
       </widget>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QWidget" name="widget" native="true">
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="previousButton">
-         <property name="text">
-          <string>Précédent</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="nextButton">
-         <property name="text">
-          <string>Suivant</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </widget>
     </item>
    </layout>
@@ -152,7 +146,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>843</width>
+     <width>981</width>
      <height>25</height>
     </rect>
    </property>
@@ -196,8 +190,15 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionRecr_e_la_table_d_attribution">
+   <property name="icon">
+    <iconset resource="../rc/icons.qrc">
+     <normaloff>:/ico/attr_table_ico.svg</normaloff>:/ico/attr_table_ico.svg</iconset>
+   </property>
    <property name="text">
     <string>recréer la table d'attribution</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
    </property>
   </action>
   <action name="actionOuvrir_un_projet">

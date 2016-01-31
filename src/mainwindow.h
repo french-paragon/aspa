@@ -37,6 +37,8 @@ public slots:
 	bool saveProjectAs();
 
 	bool doAttribution();
+	bool exportAttributionAsHtml();
+	bool exportAttributionAsPdf();
 
 	void quit();
 
@@ -45,6 +47,11 @@ protected:
 	void configureModels();
 	void configureActions();
 	void configureToolBar();
+
+	QString getSaveFileName(QString defaultExt,
+						 QString filter,
+						 QString dir,
+						 bool forceExtension = false);
 
 private:
     Ui::MainWindow *ui;

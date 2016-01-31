@@ -26,6 +26,8 @@ public:
 						Qt::Orientation orientation,
 						int role = Qt::DisplayRole) const;
 
+	QString toHtml() const;
+
 signals:
 
 public slots:

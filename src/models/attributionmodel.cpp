@@ -88,3 +88,35 @@ QVariant AttributionModel::headerData(int column,
 	return QVariant();
 
 }
+
+QString AttributionModel::toHtml() const{
+
+	QString out = "<html><head><meta charset=\"UTF-8\"></head><body><table style=\"border: 5px solid black;"
+				  " border-collapse: collapse;\"><tr>";
+
+	//table header
+	for(int j = 0; j < columnCount(); j++){
+		out += "<th style=\"padding: 15px; "
+			   "color:" + headerData(j, Qt::Horizontal, Qt::ForegroundRole).value<QColor>().name()
+				+ "; background:" + headerData(j, Qt::Horizontal, Qt::BackgroundRole).value<QColor>().name()
+				+ "; \">" + headerData(j, Qt::Horizontal).toString() + "</th>";
+	}
+
+	out += "</tr>";
+
+	//table body
+	for(int i = 0; i < rowCount(); i++){
+		out += "<tr>";
+		for(int j = 0; j < columnCount(); j++){
+			out += "<td style=\" padding: 15px; "
+				   "color:" + data(index(i, j), Qt::ForegroundRole).value<QColor>().name()
+					+ "; background:" + data(index(i, j), Qt::BackgroundRole).value<QColor>().name()
+					+ "; \">" + data(index(i, j)).toString() + "</td>";
+		}
+		out += "</tr>";
+	}
+
+	out += "</table></body></html>";
+
+	return out;
+}

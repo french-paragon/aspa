@@ -11,6 +11,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+#include <QPrinter>
+#include <QTextDocument>
+
 #include <QJsonDocument>
 
 
@@ -87,6 +90,8 @@ void MainWindow::configureModels(){
 }
 void MainWindow::configureActions(){
 
+	//menus and toolbars
+
 	connect(ui->actionEnregistrer_sous, SIGNAL(triggered()),
 			this, SLOT(saveProjectAs()));
 
@@ -102,12 +107,21 @@ void MainWindow::configureActions(){
 	connect(ui->actionQuitter, SIGNAL(triggered()),
 			this, SLOT(quit()));
 
+	//buttons
+
+	connect(ui->exportHtmlButton, SIGNAL(clicked()),
+			this, SLOT(exportAttributionAsHtml()));
+
+	connect(ui->exportPdfButton, SIGNAL(clicked()),
+			this, SLOT(exportAttributionAsPdf()));
 }
 
 void MainWindow::configureToolBar(){
 	ui->mainToolBar->addAction(ui->actionEnregistrer_le_projet_courant);
 	ui->mainToolBar->addAction(ui->actionEnregistrer_sous);
 	ui->mainToolBar->addAction(ui->actionOuvrir_un_projet);
+	ui->mainToolBar->addSeparator();
+	ui->mainToolBar->addAction(ui->actionRecr_e_la_table_d_attribution);
 }
 
 
@@ -228,36 +242,7 @@ bool MainWindow::saveProject(){
 
 bool MainWindow::saveProjectAs(){
 
-	QFileDialog fd(this);
-	fd.setWindowTitle(tr("sauver le projet sous"));
-	fd.setDefaultSuffix(".aspa");
-	fd.setDirectory(QDir::homePath());
-	fd.setNameFilter("projets aspa (*.aspa)");
-
-	selection:
-
-	int code = fd.exec();
-
-	if(code == QDialog::Rejected){
-		return false;
-	}
-
-	QString saveFileName = fd.selectedFiles().first();
-
-	if(!saveFileName.endsWith(".aspa")){
-		saveFileName += ".aspa";
-	}
-
-	if(QFile(saveFileName).exists()){
-		int but = QMessageBox::question(this,
-							  tr("Le fichier %1 existe déjà").arg(QUrl(saveFileName).fileName()),
-							  tr("Désirez-vous vraiment l'écraser ?"),
-							  QMessageBox::Yes | QMessageBox::No);
-
-		if(but == QMessageBox::No){
-			goto selection;
-		}
-	}
+	QString saveFileName = getSaveFileName(".aspa", "projets aspa (*.aspa)", "", true);
 
 	QJsonObject projects = _projectsModel->representation();
 	QJsonObject demandes = _demandModel->representation();
@@ -316,6 +301,108 @@ bool MainWindow::doAttribution(){
 	}
 
 	return false;
+}
+bool MainWindow::exportAttributionAsHtml(){
+
+	if(_attributionModel == nullptr){
+		return false;
+	}
+
+	QString htmlText = _attributionModel->toHtml();
+	QByteArray datas = htmlText.toUtf8();
+
+	QString htmlFile = getSaveFileName(".html", "html files (*.html *.htm)", "");
+
+	if(htmlFile == ""){
+		return false;
+	}
+
+	QFile out(htmlFile);
+
+	if(!out.open(QIODevice::WriteOnly)){
+		QMessageBox::critical(this,
+							  "erreur lors de l'export du fichier html",
+							  "Impossible d'ouvrir le fichier en écriture.");
+		return false;
+	}
+
+	qint64 w_stat = out.write(datas);
+	out.close();
+
+	if(w_stat < 0){
+		return false;
+	}
+
+	return true;
+
+
+
+}
+bool MainWindow::exportAttributionAsPdf(){
+
+
+	if(_attributionModel == nullptr){
+		return false;
+	}
+
+	QString htmlText = _attributionModel->toHtml();
+	QString fileName = getSaveFileName(".pdf", "pdf files (*.pdf)", "", true);
+
+	QPrinter printer(QPrinter::PrinterResolution);
+	printer.setOutputFormat(QPrinter::PdfFormat);
+	printer.setPaperSize(QPrinter::A4);
+	printer.setOutputFileName(fileName);
+
+	QTextDocument doc;
+	doc.setHtml(htmlText);
+	doc.setPageSize(printer.pageRect().size()); // This is necessary if you want to hide the page number
+	doc.print(&printer);
+
+	return true;
+}
+
+QString MainWindow::getSaveFileName(QString defaultExt,
+								 QString filter,
+								 QString dir,
+								 bool forceExtension){
+
+	QDir ddir(dir);
+
+	QFileDialog fd(this);
+	fd.setWindowTitle(tr("exporter l'attribution en html"));
+	fd.setDefaultSuffix(defaultExt);
+	fd.setDirectory((ddir.exists() && dir != "") ? dir : QDir::homePath());
+	fd.setNameFilter(filter);
+
+	selection:
+
+	int code = fd.exec();
+
+	if(code == QDialog::Rejected){
+		return "";
+	}
+
+	QString saveFileName = fd.selectedFiles().first();
+
+	if(forceExtension){
+		if(!saveFileName.endsWith(defaultExt)){
+			saveFileName += defaultExt;
+		}
+	}
+
+	if(QFile(saveFileName).exists()){
+		int but = QMessageBox::question(this,
+							  tr("Le fichier %1 existe déjà").arg(QUrl(saveFileName).fileName()),
+							  tr("Désirez-vous vraiment l'écraser ?"),
+							  QMessageBox::Yes | QMessageBox::No);
+
+		if(but == QMessageBox::No){
+			goto selection;
+		}
+	}
+
+	return saveFileName;
+
 }
 
 
