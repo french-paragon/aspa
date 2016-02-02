@@ -319,6 +319,48 @@ void ProjectListModel::parseJsonObject(QJsonObject const& rep){
 
 }
 
+ProjectTuple ProjectListModel::parseTuple(QString const& csvText, QString const& sep, bool & ok){
+
+	ProjectTuple rtuple;
+
+	ok = true;
+
+	if(csvText == ""){
+		ok = false;
+		return rtuple;
+	}
+
+	QStringList strings = csvText.split(sep);
+
+	if(strings.size() < columnCount()-1){//csv line don't match the numbers of elements.
+		ok = false;
+		return rtuple;
+	}
+
+	rtuple.name = strings.first();
+	strings.pop_front();
+	rtuple.additionalVars = strings.toVector();
+
+	return rtuple;
+}
+
+void ProjectListModel::parseCsvString(QString const& csvText, QString const& sep){
+
+	QStringList lines = csvText.split("\n");
+
+	for(QString line : lines){
+
+		bool ok;
+		ProjectTuple tup = parseTuple(line, sep, ok);
+
+		if(ok){
+			insertProjectTuple(tup);
+		}
+
+	}
+
+}
+
 
 void ProjectListModel::emptyTuples(){
 	beginRemoveRows(QModelIndex(),0,rowCount()-1);

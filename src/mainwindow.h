@@ -42,6 +42,9 @@ public slots:
 	bool saveProject();
 	bool saveProjectAs();
 
+	void importProjects();
+	void importDemands();
+
 	bool doAttribution();
 	bool exportAttributionAsHtml();
 	bool exportAttributionAsPdf();
@@ -64,6 +67,9 @@ protected:
 						 QString filter,
 						 QString dir,
 						 bool forceExtension = false);
+
+	QString getImportFileName(QString filter,
+							QString dir);
 
 private:
     Ui::MainWindow *ui;

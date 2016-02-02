@@ -125,6 +125,11 @@ void MainWindow::configureActions(){
 	connect(ui->actionQuitter, SIGNAL(triggered()),
 			this, SLOT(quit()));
 
+	connect(ui->actionImporter_une_liste_de_projets, SIGNAL(triggered()),
+			this, SLOT(importProjects()));
+	connect(ui->actionImporter_une_liste_de_demandes, SIGNAL(triggered()),
+			this, SLOT(importDemands()));
+
 	//buttons
 
 	connect(ui->exportHtmlButton, SIGNAL(clicked()),
@@ -132,6 +137,11 @@ void MainWindow::configureActions(){
 
 	connect(ui->exportPdfButton, SIGNAL(clicked()),
 			this, SLOT(exportAttributionAsPdf()));
+
+	connect(ui->importProjectButton, SIGNAL(clicked()),
+			this, SLOT(importProjects()));
+	connect(ui->ImportDemandButton, SIGNAL(clicked()),
+			this, SLOT(importDemands()));
 }
 
 void MainWindow::configureToolBar(){
@@ -306,6 +316,10 @@ bool MainWindow::saveProjectAs(){
 
 	QString saveFileName = getSaveFileName(".aspa", "projets aspa (*.aspa)", "", true);
 
+	if(saveFileName == ""){
+		return false;
+	}
+
 	QJsonObject projects = _projectsModel->representation();
 	QJsonObject demandes = _demandModel->representation();
 	QJsonObject attributions = _attributionModel->representation();
@@ -339,6 +353,53 @@ bool MainWindow::saveProjectAs(){
 
 	return true;
 
+}
+
+void MainWindow::importProjects(){
+
+	QString fileName = getImportFileName("fichiers csv (*.csv *.dat *.txt)",
+									   QDir::homePath());
+
+	if(fileName == ""){
+		return;
+	}
+
+	QFile in(fileName);
+
+	if(!in.open(QIODevice::ReadOnly)){
+		QMessageBox::warning(this,
+							 "Impossible d'importer le fichiers",
+							 QString("Le fichier %1 n'a pas pût être importé.").arg(fileName));
+		return;
+	}
+
+	QString datas(in.readAll());
+
+	_projectsModel->parseCsvString(datas);
+
+}
+
+void MainWindow::importDemands(){
+
+	QString fileName = getImportFileName("fichiers csv (*.csv *.dat *.txt)",
+									   QDir::homePath());
+
+	if(fileName == ""){
+		return;
+	}
+
+	QFile in(fileName);
+
+	if(!in.open(QIODevice::ReadOnly)){
+		QMessageBox::warning(this,
+							 "Impossible d'importer le fichiers",
+							 QString("Le fichier %1 n'a pas pût être importé.").arg(fileName));
+		return;
+	}
+
+	QString datas(in.readAll());
+
+	_demandModel->parseCsvString(datas);
 }
 
 bool MainWindow::doAttribution(){
@@ -472,6 +533,30 @@ QString MainWindow::getSaveFileName(QString defaultExt,
 
 }
 
+
+QString MainWindow::getImportFileName(QString filter,
+									QString dir){
+
+	QFileDialog fd(this);
+	fd.setWindowTitle(tr("Choisir un fichier à importer"));
+	fd.setFileMode(QFileDialog::ExistingFile);
+	//fd.setDefaultSuffix(".aspa");
+	fd.setDirectory(dir);
+	fd.setNameFilter(filter);
+
+	//selection:
+
+	int code = fd.exec();
+
+	if(code == QDialog::Rejected){
+		return "";
+	}
+
+	QString openFileName = fd.selectedFiles().first();
+
+	return openFileName;
+
+}
 
 void MainWindow::quit(){
 	qApp->quit();

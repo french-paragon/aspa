@@ -403,6 +403,63 @@ void DemandListModel::parseJsonObject(QJsonObject const& rep){
 	emit(changedDatas());
 }
 
+DemandTuple DemandListModel::parseTuple(QString const& csvText, QString const& sep, bool & ok){
+
+	DemandTuple rtuple;
+
+	ok = true;
+
+	if(csvText == ""){
+		ok = false;
+		return rtuple;
+	}
+
+	QStringList strings = csvText.split(sep);
+
+	if(strings.size() < columnCount()-1){//csv line don't match the numbers of elements.
+		ok = false;
+		return rtuple;
+	}
+
+	rtuple.names = strings.first();
+	strings.pop_front();
+
+	//Order of demands.
+	rtuple.preferences = QVector<int>(_numberOfChoices, noChoice);
+
+	for(unsigned int i = 0; i < _numberOfChoices; i++){
+		QString c = strings.first();
+		bool ok;
+		int v = QVariant(c).toInt(&ok);
+
+		if(ok){
+			rtuple.preferences[i] = v;
+		}
+		strings.pop_front();
+	}
+
+	//additional vars
+	rtuple.additionalVars = strings.toVector();
+
+	return rtuple;
+
+}
+
+void DemandListModel::parseCsvString(QString const& csvText, QString const& sep){
+
+	QStringList lines = csvText.split("\n");
+
+	for(QString line : lines){
+
+		bool ok;
+		DemandTuple tup = parseTuple(line, sep, ok);
+
+		if(ok){
+			insertDemandTuple(tup);
+		}
+
+	}
+}
 
 void DemandListModel::emptyTuples(){
 	beginRemoveRows(QModelIndex(),0,rowCount()-1);

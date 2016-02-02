@@ -49,6 +49,7 @@ public:
 
 	void emptyTuples();
 	void parseJsonObject(QJsonObject const& rep = QJsonObject());
+	void parseCsvString(QString const& csvText, QString const& sep = ",");
 	void insertProjectTuple(ProjectTuple const& tuple);
 	void removeSelectedTuples(QModelIndexList const& selecteds);
 
@@ -67,6 +68,7 @@ protected:
 
 	QJsonObject representTuple(ProjectTuple const& tuple) const;
 	ProjectTuple parseTuple(QJsonObject const& tuple, bool & ok);
+	ProjectTuple parseTuple(QString const& csvText, QString const& sep, bool & ok);
 
 protected:
 
