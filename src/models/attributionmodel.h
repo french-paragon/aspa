@@ -12,6 +12,14 @@
 
 class AttributionModel : public QAbstractTableModel
 {
+	Q_OBJECT
+
+public:
+
+	static const char* titleIndex;
+	static const char* infosIndex;
+	static const char* attrIndex;
+
 public:
 	AttributionModel(DemandListModel* demands,
 					 ProjectListModel* projects,
@@ -28,15 +36,34 @@ public:
 
 	QString toHtml() const;
 
+	QString titre() const{ return _titre; }
+	QString infos() const{ return _infos; }
+
+	QJsonObject representation() const;
+	void parseJsonObject(QJsonObject const& rep = QJsonObject());
+
 signals:
 
+	void titleChanged(QString title);
+	void infosChanged(QString infos);
+
 public slots:
+
+	void setTitre(QString titre);
+	void setInfos(QString infos);
+
+	void setAttributionList(QVector<Attribution> const& attr);
+	void clearAttributionList();
+	void clearAll();
 
 protected:
 
 	DemandListModel* _demands;
 	ProjectListModel* _projects;
 	QVector<Attribution> _attributions;
+
+	QString _titre;
+	QString _infos;
 
 };
 

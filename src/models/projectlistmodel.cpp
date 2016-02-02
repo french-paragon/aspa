@@ -140,13 +140,16 @@ bool ProjectListModel::setData ( const QModelIndex & index,
 	int row = index.row();
 	int column = index.column();
 
+	bool retour = false;
+
 	if(role == Qt::EditRole){
 		if(column > 0){// indices ar not editables.
 			if(value.type() == QVariant::String){
 				if(column == 1){
 
 					_tuples[row].name = value.toString();
-					return true;
+					retour = true;
+					goto fin;
 
 				} else if (column - 2 < _additionalVariablesName.size()){
 
@@ -154,14 +157,21 @@ bool ProjectListModel::setData ( const QModelIndex & index,
 						_tuples[row].additionalVars.resize(_additionalVariablesName.size());
 					}
 					_tuples[row].additionalVars[column-2] = value.toString();
-					return true;
+					retour = true;
+					goto fin;
 
 				}
 			}
 		}
 	}
 
-	return false;
+	fin:
+	if(retour){
+		emit(changedDatas());
+		emit(dataChanged(index, index));
+	}
+
+	return retour;
 }
 Qt::ItemFlags ProjectListModel::flags ( const QModelIndex & index ) const{
 
@@ -258,6 +268,8 @@ ProjectTuple ProjectListModel::parseTuple(QJsonObject const& tuple, bool & ok){
 		_nextInsertId = rtuple.index + 1;
 	}
 
+	emit(changedDatas());
+
 	return rtuple;
 
 	end_with_error:
@@ -303,6 +315,8 @@ void ProjectListModel::parseJsonObject(QJsonObject const& rep){
 		}
 	}
 
+	emit(changedDatas());
+
 }
 
 
@@ -311,6 +325,7 @@ void ProjectListModel::emptyTuples(){
 	_tuples.clear();
 	_usedIndexes.clear();
 	endRemoveRows();
+	emit(changedDatas());
 }
 
 void ProjectListModel::insertProjectTuple(ProjectTuple const& tuple){
@@ -331,9 +346,14 @@ void ProjectListModel::insertProjectTuple(ProjectTuple const& tuple){
 		}
 	}
 	endInsertRows();
+	emit(changedDatas());
 	qDebug() << "end tuple insertion.";
 }
 void ProjectListModel::removeSelectedTuples(const QModelIndexList &selecteds){
+
+	if(selecteds.empty()){
+		return; //nothing to do.
+	}
 
 	QVector<int> rows;
 
@@ -352,6 +372,7 @@ void ProjectListModel::removeSelectedTuples(const QModelIndexList &selecteds){
 		_tuples.removeAt(rows[i]-i);
 		endRemoveRows();
 	}
+	emit(changedDatas());
 
 }
 

@@ -56,6 +56,8 @@ public:
 
 signals:
 
+	void changedDatas();
+
 public slots:
 
 	void createTuple();

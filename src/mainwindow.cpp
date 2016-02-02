@@ -16,11 +16,13 @@
 
 #include <QJsonDocument>
 
+#include <QDebug>
 
 const char* MainWindow::progName = "aspa";
 
 const char* MainWindow::projectsDatasIndex = "projects";
 const char* MainWindow::demandesDatasIndex = "demandes";
+const char* MainWindow::attributionDatasIndex = "attribs";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -32,11 +34,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	 _projectsModel = new ProjectListModel(this);
 	 _demandModel = new DemandListModel(this);
-	 _attributionModel = nullptr;
+	 _attributionModel = new AttributionModel(_demandModel,
+											  _projectsModel,
+											  QVector<Attribution>(),
+											  this);
 
 	 configureModels();
 	 configureActions();
 	 configureToolBar();
+	 configureOptions();
 
 	 setWindowTitle(progName);
 }
@@ -80,6 +86,9 @@ void MainWindow::configureModels(){
 	ui->demandView->verticalHeader()->hide();
 	ui->demandView->horizontalHeader()->setStretchLastSection(true);
 
+	//Attribution Model
+
+	ui->attributionView->setModel(_attributionModel);
 	ui->attributionView->horizontalHeader()
 			->setStyleSheet("QHeaderView::section{background-color:rgb(144, 50, 13); "
 							"selection-background-color: transparent;}"
@@ -87,6 +96,12 @@ void MainWindow::configureModels(){
 							"selection-background-color: transparent;}");
 	ui->attributionView->verticalHeader()->hide();
 	ui->attributionView->horizontalHeader()->setStretchLastSection(true);
+
+	// in case of a change in the project throw attribution list away.
+	connect(_projectsModel, SIGNAL(changedDatas()),
+			_attributionModel, SLOT(clearAttributionList()));
+	connect(_demandModel, SIGNAL(changedDatas()),
+			_attributionModel, SLOT(clearAttributionList()));
 }
 void MainWindow::configureActions(){
 
@@ -103,6 +118,9 @@ void MainWindow::configureActions(){
 
 	connect(ui->actionRecr_e_la_table_d_attribution, SIGNAL(triggered()),
 			this, SLOT(doAttribution()));
+
+	connect(ui->actionFermer_le_projet, SIGNAL(triggered()),
+			this, SLOT(closeProject()));
 
 	connect(ui->actionQuitter, SIGNAL(triggered()),
 			this, SLOT(quit()));
@@ -122,6 +140,32 @@ void MainWindow::configureToolBar(){
 	ui->mainToolBar->addAction(ui->actionOuvrir_un_projet);
 	ui->mainToolBar->addSeparator();
 	ui->mainToolBar->addAction(ui->actionRecr_e_la_table_d_attribution);
+}
+void MainWindow::configureOptions(){
+
+	//number of choices.
+	ui->numberOfChoiceSpinBox->setValue(_demandModel->numberOfChoices());
+	connect(ui->numberOfChoiceSpinBox, SIGNAL(valueChanged(int)),
+			_demandModel, SLOT(setNumberOfChoices(int)));
+	connect(_demandModel, SIGNAL(numberOfChoicesChanged(int)),
+			ui->numberOfChoiceSpinBox, SLOT(setValue(int)));
+
+	//infos.
+	connect(ui->titreLineEdit, SIGNAL(textChanged(QString)),
+			_attributionModel, SLOT(setTitre(QString)));
+	connect(_attributionModel, SIGNAL(titleChanged(QString)),
+			ui->titreLineEdit, SLOT(setText(QString)));
+
+	connect(ui->infosTextEdit, SIGNAL(textChanged()),
+			this, SLOT(forwardInfoText()));
+	connect(this, SIGNAL(newInfosText(QString)),
+			_attributionModel, SLOT(setInfos(QString)));
+	connect(_attributionModel, SIGNAL(infosChanged(QString)),
+			this, SLOT(setTextToInfos(QString)));
+
+	_attributionModel->setTitre(ui->titreLineEdit->text());
+	_attributionModel->setInfos(ui->infosTextEdit->toPlainText());
+
 }
 
 
@@ -173,13 +217,9 @@ bool MainWindow::openProject(){
 
 	if(doc.isObject()){
 
-		delete _attributionModel;
-		_attributionModel = nullptr;
-
 		QJsonObject proj = doc.object();
 
-		_projectsModel->emptyTuples();
-		_demandModel->emptyTuples();
+		closeProject();
 
 		if(proj.contains(projectsDatasIndex)){
 			QJsonObject projects = proj.value(projectsDatasIndex).toObject();
@@ -193,6 +233,12 @@ bool MainWindow::openProject(){
 			_demandModel->parseJsonObject(demands);
 		}
 
+		if(proj.contains(attributionDatasIndex)){
+			QJsonObject attr = proj.value(attributionDatasIndex).toObject();
+
+			_attributionModel->parseJsonObject(attr);
+		}
+
 		_projectFile = openFileName;
 		return true;
 
@@ -201,8 +247,18 @@ bool MainWindow::openProject(){
 	return false;
 
 }
+bool MainWindow::closeProject(){
+
+	_projectsModel->emptyTuples();
+	_demandModel->emptyTuples();
+	_attributionModel->clearAll();
+
+	return true;
+}
 
 bool MainWindow::saveProject(){
+
+	qDebug() << "begin project saving";
 
 	QFile out(_projectFile);
 
@@ -212,11 +268,15 @@ bool MainWindow::saveProject(){
 
 	QJsonObject projects = _projectsModel->representation();
 	QJsonObject demandes = _demandModel->representation();
+	QJsonObject attributions = _attributionModel->representation();
 
 	QJsonObject proj;
 
 	proj.insert(projectsDatasIndex, projects);
 	proj.insert(demandesDatasIndex, demandes);
+	proj.insert(attributionDatasIndex, attributions);
+
+	qDebug() << "encoding objects to json ended";
 
 	QJsonDocument doc(proj);
 	QByteArray datas = doc.toJson();
@@ -230,6 +290,8 @@ bool MainWindow::saveProject(){
 
 	qint64 w_stat = out.write(datas);
 	out.close();
+
+	qDebug() << "file wrinting ended";
 
 	if(w_stat < 0){
 		return false;
@@ -246,11 +308,13 @@ bool MainWindow::saveProjectAs(){
 
 	QJsonObject projects = _projectsModel->representation();
 	QJsonObject demandes = _demandModel->representation();
+	QJsonObject attributions = _attributionModel->representation();
 
 	QJsonObject proj;
 
 	proj.insert(projectsDatasIndex, projects);
 	proj.insert(demandesDatasIndex, demandes);
+	proj.insert(attributionDatasIndex, attributions);
 
 	QJsonDocument doc(proj);
 	QByteArray datas = doc.toJson();
@@ -279,29 +343,32 @@ bool MainWindow::saveProjectAs(){
 
 bool MainWindow::doAttribution(){
 
-	if(_attributionModel == nullptr){//new attribution
-		QVector<Attribution> attr = Attributor::directAttribution(*_projectsModel,
-																  *_demandModel);
+	QVector<Attribution> attr = Attributor::directAttribution(*_projectsModel,
+															  *_demandModel);
 
 		//hungarian algorithm yet not supported
 		//TODO: support it.
 
-		if(attr == QVector<Attribution>()){
-			return false;
-		}
-
-		_attributionModel = new AttributionModel(_demandModel,
-												 _projectsModel,
-												 attr,
-												 this);
-
-		ui->attributionView->setModel(_attributionModel);
-
-		ui->tabWidget->setCurrentIndex(3);
+	if(attr == QVector<Attribution>()){
+		return false;
 	}
 
-	return false;
+	_attributionModel->setAttributionList(attr);
+
+	ui->tabWidget->setCurrentIndex(3);
+
+	return true;
 }
+
+void MainWindow::forwardInfoText(){
+	emit(newInfosText(ui->infosTextEdit->toPlainText()));
+}
+void MainWindow::setTextToInfos(QString const& text){
+	if(text != ui->infosTextEdit->toPlainText()){
+		ui->infosTextEdit->setPlainText(text);
+	}
+}
+
 bool MainWindow::exportAttributionAsHtml(){
 
 	if(_attributionModel == nullptr){

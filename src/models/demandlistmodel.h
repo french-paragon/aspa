@@ -64,9 +64,14 @@ public:
 
 signals:
 
+	void changedDatas();
+	void numberOfChoicesChanged(int n_choix);
+
 public slots:
 
 	void createTuple();
+
+	void setNumberOfChoices(int n_choix);
 
 
 protected:

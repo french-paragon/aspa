@@ -165,13 +165,16 @@ bool DemandListModel::setData(const QModelIndex & index,
 	int row = index.row();
 	int col = index.column();
 
+	bool retour = false;
+
 	if(role == Qt::EditRole){
 		if(col > 0){
 			if(value.type() == QVariant::String || value.type() == QVariant::Int){
 				if(col == 1){
 
 					_tuples[row].names = value.toString();
-					return true;
+					retour = true;
+					goto fin;
 
 				} else if ((uint) col < 2 + _numberOfChoices){
 
@@ -189,11 +192,13 @@ bool DemandListModel::setData(const QModelIndex & index,
 					int val = value.toInt(&ok);
 
 					if(!ok){
-						return false;
+						retour = false;
+						goto fin;
 					}
 
 					_tuples[row].preferences[col-2] = val;
-					return true;
+					retour = true;
+					goto fin;
 
 				} else {
 
@@ -202,14 +207,21 @@ bool DemandListModel::setData(const QModelIndex & index,
 					}
 
 					_tuples[row].additionalVars[col-2-_numberOfChoices] = value.toString();
-					return true;
+					retour = true;
+					goto fin;
 
 				}
 			}
 		}
 	}
 
-	return false;
+	fin:
+	if(retour){
+		emit(changedDatas());
+		emit(dataChanged(index, index));
+	}
+
+	return retour;
 }
 
 Qt::ItemFlags DemandListModel::flags ( const QModelIndex & index ) const{
@@ -336,6 +348,8 @@ DemandTuple DemandListModel::parseTuple(QJsonObject const& tuple, bool & ok){
 		_nextInsertId = rtuple.index + 1;
 	}
 
+	emit(changedDatas());
+
 	return rtuple;
 
 	end_with_error:
@@ -353,7 +367,7 @@ void DemandListModel::parseJsonObject(QJsonObject const& rep){
 	}
 
 	if(rep.contains(numberOfChoicesIndex)){
-		_numberOfChoices = rep.value(numberOfChoicesIndex).toInt();
+		setNumberOfChoices(rep.value(numberOfChoicesIndex).toInt());
 	}
 
 	if(rep.contains(additionalVarsIndex)){
@@ -385,6 +399,8 @@ void DemandListModel::parseJsonObject(QJsonObject const& rep){
 			}
 		}
 	}
+
+	emit(changedDatas());
 }
 
 
@@ -393,6 +409,7 @@ void DemandListModel::emptyTuples(){
 	_tuples.clear();
 	_usedIndexes.clear();
 	endRemoveRows();
+	emit(changedDatas());
 }
 
 void DemandListModel::insertDemandTuple(DemandTuple const& tuple){
@@ -411,8 +428,13 @@ void DemandListModel::insertDemandTuple(DemandTuple const& tuple){
 		}
 	}
 	endInsertRows();
+	emit(changedDatas());
 }
 void DemandListModel::removeSelectedTuples(const QModelIndexList &selecteds){
+
+	if(selecteds.empty()){
+		return; //nothing to do.
+	}
 
 	QVector<int> rows;
 
@@ -431,6 +453,8 @@ void DemandListModel::removeSelectedTuples(const QModelIndexList &selecteds){
 		_tuples.removeAt(rows[i]-i);
 		endRemoveRows();
 	}
+
+	emit(changedDatas());
 
 }
 
@@ -460,4 +484,25 @@ int DemandListModel::findPriorityIndexById(int id, unsigned int level) const{
 		}
 	}
 	return noChoice;
+}
+
+void DemandListModel::setNumberOfChoices(int n_choix){
+
+	if(n_choix > 0){
+		unsigned int n_c = (unsigned int) n_choix;
+
+		if(_numberOfChoices != n_c){
+			if(n_c < _numberOfChoices){
+				beginRemoveColumns(QModelIndex(), 2 + n_c, 1 + _numberOfChoices);
+				_numberOfChoices = n_c;
+				endRemoveColumns();
+			} else {
+				beginInsertColumns(QModelIndex(), 2 + _numberOfChoices, 1 + n_c);
+				_numberOfChoices = n_c;
+				endInsertColumns();
+			}
+			emit(numberOfChoicesChanged(_numberOfChoices));
+		}
+	}
+
 }

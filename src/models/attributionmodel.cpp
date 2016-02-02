@@ -3,6 +3,15 @@
 #include <QColor>
 #include <QFont>
 
+#include <QDebug>
+
+#include <QJsonObject>
+#include <QJsonArray>
+
+const char* AttributionModel::titleIndex = "titre";
+const char* AttributionModel::infosIndex = "infos";
+const char* AttributionModel::attrIndex = "attributions";
+
 AttributionModel::AttributionModel(DemandListModel* demands,
 								   ProjectListModel* projects,
 								   QVector<Attribution> attribution,
@@ -91,7 +100,19 @@ QVariant AttributionModel::headerData(int column,
 
 QString AttributionModel::toHtml() const{
 
-	QString out = "<html><head><meta charset=\"UTF-8\"></head><body><table style=\"border: 5px solid black;"
+	QString out = "<html><head><meta charset=\"UTF-8\"></head><body>";
+
+	if(_titre != "") {
+		out += QString("<h1>%1</h1><br>").arg(_titre);
+	} else {
+		out += "<h1>Attributions des projets</h1><br>";
+	}
+
+	if(_infos != ""){
+		out += QString("<div>%1</div><br>").arg(_infos);
+	}
+
+	out += "<table style=\"border: 5px solid black;"
 				  " border-collapse: collapse;\"><tr>";
 
 	//table header
@@ -119,4 +140,112 @@ QString AttributionModel::toHtml() const{
 	out += "</table></body></html>";
 
 	return out;
+}
+
+void AttributionModel::setTitre(QString titre){
+	if(titre != _titre){
+		_titre = titre;
+		emit(titleChanged(_titre));
+	}
+}
+
+void AttributionModel::setInfos(QString infos){
+	if(infos != _infos){
+		_infos = infos;
+		emit(infosChanged(_infos));
+	}
+}
+
+void AttributionModel::setAttributionList(QVector<Attribution> const& attr){
+	qDebug() << "begin resetting attribution List. with old size = "
+			 << _attributions.size() << "new size = " << attr.size();
+	if(attr.size() > _attributions.size()){
+		beginInsertRows(QModelIndex(), _attributions.size(), attr.size()-1);
+		_attributions = attr;
+		endInsertRows();
+	} else if(attr.size() < _attributions.size()){
+		beginRemoveRows(QModelIndex(), attr.size(), _attributions.size()-1);
+		_attributions = attr;
+		endRemoveRows();
+	} else {
+		_attributions = attr;
+	}
+	emit(dataChanged(index(0,0), index(_attributions.size()-1,1)));
+	qDebug() << "end resetting attribution List.";
+}
+
+void AttributionModel::clearAttributionList(){
+	if(_attributions.size() > 0){
+		beginRemoveRows(QModelIndex(), 0, _attributions.size()-1);
+		_attributions = QVector<Attribution>();
+		endRemoveRows();
+	}
+}
+void AttributionModel::clearAll(){
+	setTitre("");
+	setInfos("");
+	clearAttributionList();
+}
+
+QJsonObject AttributionModel::representation() const{
+
+	QJsonObject obj;
+
+	obj.insert(titleIndex, _titre);
+	obj.insert(infosIndex, _infos);
+
+	QJsonArray attrs;
+
+	for(int i = 0; i < _attributions.size(); i++){
+		QJsonArray attr;
+		attr.push_back(_attributions[i].groupId);
+		attr.push_back(_attributions[i].projetId);
+
+		attrs.push_back(attr);
+	}
+
+	obj.insert(attrIndex, attrs);
+
+	return obj;
+
+}
+void AttributionModel::parseJsonObject(QJsonObject const& rep){
+
+	if(rep.contains(titleIndex)){
+		setTitre(rep.value(titleIndex).toString());
+	} else {
+		setTitre("");
+	}
+
+	if(rep.contains(infosIndex)){
+		setInfos(rep.value(infosIndex).toString());
+	} else {
+		setTitre("");
+	}
+
+	QVector<Attribution> attr;
+
+	if(rep.contains(attrIndex)){
+
+		QJsonValue val = rep.value(attrIndex);
+
+		if(val.isArray()){
+			QJsonArray array = val.toArray();
+			for(int i = 0; i < array.size(); i++){
+				QJsonValue sub = array[i];
+				if(sub.isArray()){
+					QJsonArray subArray = sub.toArray();
+					if(subArray.size() == 2){
+						Attribution a;
+						a.groupId = subArray[0].toInt();
+						a.projetId = subArray[0].toInt();
+						attr.push_back(a);
+					}
+				}
+			}
+		}
+	}
+
+	setAttributionList(attr);
+
 }

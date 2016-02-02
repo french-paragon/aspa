@@ -21,10 +21,15 @@ public:
 
 	static const char* projectsDatasIndex;
 	static const char* demandesDatasIndex;
+	static const char* attributionDatasIndex;
 
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+signals:
+
+	void newInfosText(QString info);
 
 public slots:
 
@@ -32,6 +37,7 @@ public slots:
 	void onDemandDeletionRequested();
 
 	bool openProject();
+	bool closeProject();
 
 	bool saveProject();
 	bool saveProjectAs();
@@ -42,11 +48,17 @@ public slots:
 
 	void quit();
 
+protected slots:
+
+	void forwardInfoText();
+	void setTextToInfos(QString const& text);
+
 protected:
 
 	void configureModels();
 	void configureActions();
 	void configureToolBar();
+	void configureOptions();
 
 	QString getSaveFileName(QString defaultExt,
 						 QString filter,
