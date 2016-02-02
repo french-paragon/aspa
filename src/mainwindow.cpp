@@ -6,6 +6,8 @@
 #include "attributionmodel.h"
 #include "attributor.h"
 
+#include "aboutdialog.h"
+
 #include <QDir>
 #include <QTableView>
 #include <QFileDialog>
@@ -129,6 +131,9 @@ void MainWindow::configureActions(){
 			this, SLOT(importProjects()));
 	connect(ui->actionImporter_une_liste_de_demandes, SIGNAL(triggered()),
 			this, SLOT(importDemands()));
+
+	connect(ui->action_propos, SIGNAL(triggered()),
+			this, SLOT(showAboutDialog()));
 
 	//buttons
 
@@ -557,6 +562,15 @@ QString MainWindow::getImportFileName(QString filter,
 	return openFileName;
 
 }
+
+void MainWindow::showAboutDialog(){
+
+	AboutDialog dialog(this);
+
+	dialog.exec();
+
+}
+
 
 void MainWindow::quit(){
 	qApp->quit();

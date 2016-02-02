@@ -257,6 +257,7 @@
     <property name="title">
      <string>aide</string>
     </property>
+    <addaction name="action_propos"/>
    </widget>
    <addaction name="menuFichier"/>
    <addaction name="menuEdition"/>
@@ -337,6 +338,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="action_propos">
+   <property name="text">
+    <string>à propos</string>
    </property>
   </action>
  </widget>

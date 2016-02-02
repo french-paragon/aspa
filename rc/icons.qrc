@@ -6,5 +6,6 @@
         <file>ico/attr_table_ico.svg</file>
         <file>ico/html_ico.svg</file>
         <file>ico/pdf_ico.svg</file>
+        <file>ico/logo_paragon.png</file>
     </qresource>
 </RCC>

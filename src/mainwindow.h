@@ -49,6 +49,8 @@ public slots:
 	bool exportAttributionAsHtml();
 	bool exportAttributionAsPdf();
 
+	void showAboutDialog();
+
 	void quit();
 
 protected slots:

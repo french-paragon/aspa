@@ -16,6 +16,7 @@ CONFIG += c++11
 INCLUDEPATH += ./src
 INCLUDEPATH += ./src/models
 INCLUDEPATH += ./src/utils
+INCLUDEPATH += ./src/views
 
 
 SOURCES += src/main.cpp\
@@ -23,15 +24,18 @@ SOURCES += src/main.cpp\
     src/models/projectlistmodel.cpp \
     src/models/demandlistmodel.cpp \
     src/utils/attributor.cpp \
-    src/models/attributionmodel.cpp
+    src/models/attributionmodel.cpp \
+    src/views/aboutdialog.cpp
 
 HEADERS  += src/mainwindow.h \
     src/models/projectlistmodel.h \
     src/models/demandlistmodel.h \
     src/utils/attributor.h \
-    src/models/attributionmodel.h
+    src/models/attributionmodel.h \
+    src/views/aboutdialog.h
 
-FORMS    += src/mainwindow.ui
+FORMS    += src/mainwindow.ui \
+    src/views/aboutdialog.ui
 
 RESOURCES += \
     rc/icons.qrc
