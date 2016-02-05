@@ -25,14 +25,16 @@ SOURCES += src/main.cpp\
     src/models/demandlistmodel.cpp \
     src/utils/attributor.cpp \
     src/models/attributionmodel.cpp \
-    src/views/aboutdialog.cpp
+    src/views/aboutdialog.cpp \
+    src/utils/munkres.cpp
 
 HEADERS  += src/mainwindow.h \
     src/models/projectlistmodel.h \
     src/models/demandlistmodel.h \
     src/utils/attributor.h \
     src/models/attributionmodel.h \
-    src/views/aboutdialog.h
+    src/views/aboutdialog.h \
+    src/utils/munkres.h
 
 FORMS    += src/mainwindow.ui \
     src/views/aboutdialog.ui
