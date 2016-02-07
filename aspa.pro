@@ -13,6 +13,21 @@ TEMPLATE = app
 
 CONFIG += c++11
 
+BUILD_PLATFORM = $$(BUILD_PLATFORM)
+
+!isEmpty(BUILD_PLATFORM) {
+
+    equals(BUILD_PLATFORM, "MXESTATIC") {
+
+        message("cross compiling from linux to windows using MXE static")
+        DEFINES += MXE_STATIC WINDOWS
+
+        QTPLUGIN += qsvg
+
+    }
+
+}
+
 INCLUDEPATH += ./src
 INCLUDEPATH += ./src/models
 INCLUDEPATH += ./src/utils
