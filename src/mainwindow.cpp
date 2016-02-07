@@ -165,6 +165,12 @@ void MainWindow::configureOptions(){
 	connect(_demandModel, SIGNAL(numberOfChoicesChanged(int)),
 			ui->numberOfChoiceSpinBox, SLOT(setValue(int)));
 
+	//attribution methode
+	connect(ui->algosComboBox, SIGNAL(currentIndexChanged(int)),
+			_attributionModel, SLOT(setAttributionAlgos(int)));
+	connect(_attributionModel, SIGNAL(algosChanged(int)),
+			ui->algosComboBox, SLOT(setCurrentIndex(int)));
+
 	//infos.
 	connect(ui->titreLineEdit, SIGNAL(textChanged(QString)),
 			_attributionModel, SLOT(setTitre(QString)));
@@ -409,11 +415,19 @@ void MainWindow::importDemands(){
 
 bool MainWindow::doAttribution(){
 
-	QVector<Attribution> attr = Attributor::directAttribution(*_projectsModel,
-															  *_demandModel);
+	QVector<Attribution> attr;
 
-		//hungarian algorithm yet not supported
-		//TODO: support it.
+
+	//TODO: better algoirthms management
+
+	if(ui->algosComboBox->currentText() == "hongroise"){
+		attr = Attributor::hungarianAlgorithm(*_projectsModel,
+											  *_demandModel);
+	} else {
+		attr = Attributor::directAttribution(*_projectsModel,
+											 *_demandModel);
+	}
+
 
 	if(attr == QVector<Attribution>()){
 		return false;

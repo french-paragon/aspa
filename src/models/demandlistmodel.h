@@ -59,9 +59,13 @@ public:
 	void removeSelectedTuples(QModelIndexList const& selecteds);
 
 	unsigned int numberOfChoices() const { return _numberOfChoices; }
+	uint findDemandIdByRow(int row) const{ return _tuples[row].index; }
 	//TODO: mapping avec les indexes (évent)
 	QString findGroupNameById(int id) const;
 	int findPriorityIndexById(int id, unsigned int level) const;
+	//TODO: more security ?
+	QString findGroupNameByRow(int id) const{ return _tuples[id].names; }
+	int findPriorityIndexByRow(int id, unsigned int level) const{ return _tuples[id].preferences[level-1]; }
 
 signals:
 

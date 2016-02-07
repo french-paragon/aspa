@@ -123,7 +123,7 @@ void step0(MatrixXi & weight,
 
 	//remove the min of each column from each column
 	for(int i = 0; i < weight.cols(); i++){
-		weight.col(i) -= MatrixXi::Constant(1, weight.rows(), weight.col(i).minCoeff());
+		weight.col(i) -= MatrixXi::Constant(weight.rows(), 1, weight.col(i).minCoeff());
 	}
 
 	//next step is 1:
@@ -153,9 +153,9 @@ void step1(MatrixXi & weight,
 					}
 				}
 			}
-			if(stared0[i] == COL_NOT_SET){ //if the row is still without selected 0
-				hasNZerosSelected = false;
-			}
+		}
+		if(stared0[i] == COL_NOT_SET){ //if the row is still without selected 0
+			hasNZerosSelected = false;
 		}
 	}
 
@@ -242,14 +242,15 @@ void step3(MatrixXi & weight,
 
 	while(true){
 
-		assert(i < n); //program will exit otherwise.
+		//asert that the series don't exceed the number of rows.
+		assert(i <= n); //program will exit otherwise.
 
 		if(i%2){ //i is not prime
 			//we are looking for a selected 0 on the column of z_i-1 (if it doesn't exist we can stop).
-			int col = pZi[i-1]%weight.rows();
+			int col = pZi[i-1]%weight.cols();
 			for(int r = 0; r < weight.rows(); r++){
 				if(stared0[r] == col){
-					pZi.push_back(r*weight.rows() + col);
+					pZi.push_back(r*weight.cols() + col);
 					break;
 				}
 			}

@@ -38,6 +38,7 @@ public:
 
 	QString titre() const{ return _titre; }
 	QString infos() const{ return _infos; }
+	int attributionAlgos() const{ return _attributionAlgos; }
 
 	QJsonObject representation() const;
 	void parseJsonObject(QJsonObject const& rep = QJsonObject());
@@ -46,11 +47,13 @@ signals:
 
 	void titleChanged(QString title);
 	void infosChanged(QString infos);
+	void algosChanged(int algos);
 
 public slots:
 
 	void setTitre(QString titre);
 	void setInfos(QString infos);
+	void setAttributionAlgos(int algosId);
 
 	void setAttributionList(QVector<Attribution> const& attr);
 	void clearAttributionList();
@@ -64,6 +67,7 @@ protected:
 
 	QString _titre;
 	QString _infos;
+	int _attributionAlgos;
 
 };
 

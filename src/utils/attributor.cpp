@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "munkres.h"
 
 
 QVector<Attribution> Attributor::directAttribution(ProjectListModel const& projects,
@@ -100,6 +101,70 @@ QVector<Attribution> Attributor::directAttribution(ProjectListModel const& proje
 	}
 
 	all_attributed:
+
+	return attributions;
+
+}
+
+
+QVector<Attribution> Attributor::hungarianAlgorithm(ProjectListModel const& projects,
+											   DemandListModel const& demandes,
+											   int (*rankToScore)(int)){
+
+	QVector<int> demandesOrders(demandes.rowCount());
+	QVector<Attribution> attributions;
+
+	//build orders of demands, since munkres method don't break equalities with random method we first creat an order key.
+	for(int i = 0; i < demandes.rowCount(); i++){
+		demandesOrders[i] = i;
+	}
+
+	std::random_shuffle(demandesOrders.begin(), demandesOrders.end());
+
+	//building matrix
+
+	Eigen::MatrixXi weights(demandes.rowCount(), projects.rowCount());
+
+	for(int i = 0; i < demandes.rowCount(); i++){
+		for(int j = 0; j < projects.rowCount(); j++){
+
+			int score = (int) demandes.numberOfChoices() + 1;
+
+			for(int k = 1; k <= (int) demandes.numberOfChoices(); k++){
+				if((int) projects.findProjectIdByRow(j) ==
+						demandes.findPriorityIndexByRow(demandesOrders[i], k)){
+					score = k;
+					break;
+				}
+			}
+
+			weights(i,j) = (rankToScore != nullptr) ? rankToScore(score) : score;
+		}
+	}
+
+	std::vector<int> pre_attr = munkres(weights);
+
+	//pre-allocate memory
+	attributions.reserve(pre_attr.size());
+
+	//case there were more projects than demands.
+	if(projects.rowCount() >= demandes.rowCount()){
+		//pre_attr represent the projects attributed to the i'th demand.
+		for(int i = 0; i < (int) pre_attr.size(); i++){
+			Attribution attr;
+			attr.projetId = projects.findProjectIdByRow(pre_attr[i]);
+			attr.groupId = demandes.findDemandIdByRow(demandesOrders[i]);
+			attributions.push_back(attr);
+		}
+	} else {
+		//pre_attr represent the demand attributed to the i'th project.
+		for(int i = 0; i < (int) pre_attr.size(); i++){
+			Attribution attr;
+			attr.projetId = projects.findProjectIdByRow(i);
+			attr.groupId = demandes.findDemandIdByRow(demandesOrders[pre_attr[i]]);
+			attributions.push_back(attr);
+		}
+	}
 
 	return attributions;
 

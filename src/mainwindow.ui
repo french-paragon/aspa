@@ -139,19 +139,48 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="numberOfChoicesBox">
-          <property name="title">
-           <string>Nombre de choix</string>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
+         <widget class="QWidget" name="widget" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="QSpinBox" name="numberOfChoiceSpinBox">
-             <property name="suffix">
-              <string> choix</string>
+            <widget class="QGroupBox" name="numberOfChoicesBox">
+             <property name="title">
+              <string>Nombre de choix</string>
              </property>
-             <property name="minimum">
-              <number>1</number>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QSpinBox" name="numberOfChoiceSpinBox">
+                <property name="suffix">
+                 <string> choix</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="attributionMethodBox">
+             <property name="title">
+              <string>Méthode d'attribution</string>
              </property>
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <widget class="QComboBox" name="algosComboBox">
+                <item>
+                 <property name="text">
+                  <string>directe</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>hongroise</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>

@@ -53,6 +53,9 @@ public:
 	void insertProjectTuple(ProjectTuple const& tuple);
 	void removeSelectedTuples(QModelIndexList const& selecteds);
 
+
+	uint findProjectIdByRow(int row) const{ return _tuples[row].index; }
+
 	QString findProjectNameById(int id);
 
 signals:

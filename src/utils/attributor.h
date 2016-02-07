@@ -29,7 +29,7 @@ namespace Attributor
 	 */
 	QVector<Attribution> hungarianAlgorithm(ProjectListModel const& projects,
 												   DemandListModel const& demandes,
-												   double (*rankToScore)(int) = nullptr);
+												   int (*rankToScore)(int) = nullptr);
 
 	/**
 	 * @brief directAttribution will give as much first choices as possible between the groups, then second, then third...

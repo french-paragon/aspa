@@ -155,6 +155,14 @@ void AttributionModel::setInfos(QString infos){
 		emit(infosChanged(_infos));
 	}
 }
+void AttributionModel::setAttributionAlgos(int algosId){
+
+	if(algosId != _attributionAlgos){
+		_attributionAlgos = algosId;
+		emit(algosChanged(_attributionAlgos));
+	}
+
+}
 
 void AttributionModel::setAttributionList(QVector<Attribution> const& attr){
 	qDebug() << "begin resetting attribution List. with old size = "
